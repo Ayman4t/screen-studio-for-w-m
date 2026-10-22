@@ -18,7 +18,7 @@ aside{grid-area:side;overflow:auto;padding:12px;background:var(--pn);backdrop-fi
 aside section{border:1px solid rgba(0,243,255,.16);border-radius:12px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.02)}
 aside h3{font-size:13px;font-weight:700;color:var(--cy);margin-bottom:8px}
 aside .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mu);margin-top:8px}aside .row output{font-family:var(--mono);color:var(--tx)}
-input[type=range]{width:100%;accent-color:var(--cy)}
+input[type=range]{width:100%;accent-color:var(--cy)}input[type=color]{width:100%;height:34px;padding:2px;background:none;border:1px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer}
 .stack{display:grid;gap:8px}.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .tg{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px}.tg input{accent-color:var(--vi);width:16px;height:16px}
 .two button.on{border-color:var(--vi);background:rgba(157,0,255,.3)}
@@ -47,7 +47,7 @@ canvas{display:block;border-radius:6px;box-shadow:0 0 0 1px rgba(0,243,255,.25),
 <script>
 const $=s=>document.querySelector(s),cv=$('#stage'),ctx=cv.getContext('2d'),vid=$('#vid');
 const SIZES={'16:9':[1280,720],'9:16':[720,1280],'1:1':[900,900]};let ratio='16:9';
-const S={fps:60,zmode:'cam',spot:1,keys:1,ksfx:1,voice:0,face:0,vthr:.08,cens:0,cstyle:'blur',zoom:2,lerp:.04,tilt:.5,pad:24,rad:20,shadow:.6,glow:.6,wall:0,sfxZoom:1,sfxClick:1,pass:1,mic:0,rip:1,cur:1,trail:1,neon:1,br:14e6};
+const S={fps:60,zmode:'cam',spot:1,keys:1,ksfx:1,voice:0,face:0,vthr:.08,cens:0,cstyle:'blur',zoom:2,lerp:.04,tilt:.5,pad:24,rad:20,shadow:.6,glow:.6,wall:0,sfxZoom:1,sfxClick:1,pass:1,mic:0,rip:1,cur:1,trail:1,neon:1,br:14e6,c1:'#101626',c2:'#3b1a6e'};let bgImg=null;
 const cam={x:.5,y:.5,tx:.5,ty:.5,z:1,tz:1,vx:0,vy:0,sx:.5,sy:.5,sz:1,lx:.5,ly:.5,lo:0};let cd=null;const boxes=[],pc=document.createElement('canvas');
 let am='cam',az=2,dm='cam',dzm=2,kf=[],cur=[],dir=false,dirStart=0,lastK=-1,zoomed=false,ptr={x:.5,y:.5},ripples=[],exporting=null,mode='demo',t=0,playing=true,last=performance.now(),prevT=0,fps=60,lastCrop=null;
 const DUR=24;
@@ -103,7 +103,7 @@ function loadVideo(url){mode='vid';kf=[];vid.src=url;vid.onloadedmetadata=()=>{i
 function toast(m){const e=$('#toast');e.textContent=m;e.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.display='none',3800)}
 /* ---------- Wallpapers ---------- */
 function blobs(W,H,bg,bl,tt){ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='lighter';bl.forEach(([c,a,b,r,s],i)=>{const x=W*(a+.25*Math.sin(tt*s+i*2)),y=H*(b+.25*Math.cos(tt*s*.8+i)),R=Math.max(W,H)*r,gr=ctx.createRadialGradient(x,y,0,x,y,R);gr.addColorStop(0,c);gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)});ctx.globalCompositeOperation='source-over'}
-const WALLS=['Cyberpunk grid','Midnight aurora','Sunset mesh','Obsidian glass','Violet nebula','Deep ocean'];
+const WALLS=['Cyberpunk grid','Midnight aurora','Sunset mesh','Obsidian glass','Violet nebula','Deep ocean','Solid color','Two-color gradient','My own image'];
 function wallpaper(i,W,H,tt){
  if(i===0){const gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#07080c');gr.addColorStop(1,'#25093f');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);ctx.lineWidth=1.5;ctx.strokeStyle='#00f3ff';const hy=H*.42,ph=(tt*.4)%1;
   for(let k=0;k<24;k++){const f=Math.pow((k+ph)/24,2);ctx.globalAlpha=.1+f*.5;ctx.beginPath();ctx.moveTo(0,hy+(H-hy)*f);ctx.lineTo(W,hy+(H-hy)*f);ctx.stroke()}
@@ -112,7 +112,10 @@ function wallpaper(i,W,H,tt){
  else if(i===2)blobs(W,H,'#1a0630',[['rgba(255,110,60,.7)',.2,.2,.6,.3],['rgba(255,50,140,.65)',.8,.3,.6,.4],['rgba(130,60,255,.6)',.5,.9,.6,.35]],tt);
  else if(i===3){const gr=ctx.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#0a0b10');gr.addColorStop(.5,'#1c1f2e');gr.addColorStop(1,'#08090d');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);ctx.fillStyle='rgba(255,255,255,.03)';for(let k=0;k<6;k++){ctx.save();ctx.translate(W*(.1+k*.18),0);ctx.rotate(.5+Math.sin(tt*.2+k)*.03);ctx.fillRect(0,-H,50+k*20,H*3);ctx.restore()}}
  else if(i===4)blobs(W,H,'#0b0320',[['rgba(157,0,255,.7)',.3,.3,.7,.35],['rgba(0,243,255,.45)',.8,.8,.6,.3],['rgba(255,0,170,.4)',.7,.2,.5,.45]],tt);
- else blobs(W,H,'#020814',[['rgba(0,90,255,.6)',.3,.7,.7,.3],['rgba(0,243,255,.4)',.8,.3,.5,.4]],tt)}
+ else if(i===5)blobs(W,H,'#020814',[['rgba(0,90,255,.6)',.3,.7,.7,.3],['rgba(0,243,255,.4)',.8,.3,.5,.4]],tt);
+ else if(i===6){ctx.fillStyle=S.c1;ctx.fillRect(0,0,W,H)}
+ else if(i===7){const gr=ctx.createLinearGradient(0,0,W,H);gr.addColorStop(0,S.c1);gr.addColorStop(1,S.c2);ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
+ else{ctx.fillStyle=S.c1;ctx.fillRect(0,0,W,H);if(bgImg){const k=Math.max(W/bgImg.naturalWidth,H/bgImg.naturalHeight),w=bgImg.naturalWidth*k,h=bgImg.naturalHeight*k;ctx.drawImage(bgImg,(W-w)/2,(H-h)/2,w,h)}}}
 /* ---------- Render ---------- */
 function frameRect(){const p=S.pad,aw=cv.width-2*p,ah=cv.height-2*p;if(ratio==='9:16')return{fx:p,fy:p,fw:aw,fh:ah};const va=srcW()/srcH();let fw=aw,fh=aw/va;if(fh>ah){fh=ah;fw=ah*va}return{fx:(cv.width-fw)/2,fy:(cv.height-fh)/2,fw,fh}}
 function render(now){
@@ -225,7 +228,7 @@ function finish(){exporting=null;$('#ov').style.display='none';setTimeout(()=>{r
 const GR=[['Camera and spring physics',[['Zoom scale','zoom',1.5,3.5,.1,v=>v.toFixed(1)+'x'],['Spring lerp factor','lerp',.01,.2,.01,v=>v.toFixed(2)],['3D tilt intensity','tilt',0,1,.05,v=>(v*100|0)+'%'],['Voice threshold (lower = more sensitive)','vthr',.02,.3,.01,v=>v.toFixed(2)]]],['Frame and styling',[['Screen padding','pad',0,120,1,v=>v+'px'],['Corner radius','rad',0,40,1,v=>v+'px'],['Drop shadow','shadow',0,1,.05,v=>(v*100|0)+'%'],['Neon border glow','glow',0,1,.05,v=>(v*100|0)+'%']]]];
 let h='<section><h3>Source</h3><div class="stack"><button id="rs">Record screen now</button><button id="up">Upload video file</button><button id="ld" class="btn-x">Load interactive demo animation</button></div></section>';
 GR.forEach(([n,l],gi)=>{h+='<section><h3>'+n+'</h3>'+l.map(([a,k,mi,ma,st,f])=>'<div class="row"><span>'+a+'</span><output id="o_'+k+'">'+f(S[k])+'</output></div><input type="range" data-k="'+k+'" min="'+mi+'" max="'+ma+'" step="'+st+'" value="'+S[k]+'" aria-label="'+a+'">').join('');
- if(gi)h+='<div class="row"><span>Wallpaper</span></div><div class="two" id="wp" style="margin-top:6px">'+WALLS.map((w,i)=>'<button data-w="'+i+'"'+(i?'':' class="on"')+'>'+w+'</button>').join('')+'</div>';h+='</section>'});
+ if(gi)h+='<div class="row"><span>Wallpaper</span></div><div class="two" id="wp" style="margin-top:6px">'+WALLS.map((w,i)=>'<button data-w="'+i+'"'+(i?'':' class="on"')+'>'+w+'</button>').join('')+'</div><div class="two" style="margin-top:8px"><label style="font-size:12px;color:var(--mu)">Color 1<input type="color" id="c1" value="'+S.c1+'"></label><label style="font-size:12px;color:var(--mu)">Color 2<input type="color" id="c2" value="'+S.c2+'"></label></div><button id="bgb" style="margin-top:8px;width:100%">Upload background image</button><input type="file" id="bgf" accept="image/*" hidden>';h+='</section>'});
 h+='<section><h3>Zoom style</h3><div class="two" id="zm" style="grid-template-columns:1fr"><button data-m="cam" class="on">Camera zoom</button><button data-m="lens">Magnifier lens</button><button data-m="both">Camera + lens</button></div><p style="font-size:12px;color:var(--mu);margin-top:8px">Each zoom keeps the style you had selected when you recorded it. Changing the style only affects your next zooms.</p></section>';
 h+='<section><h3>Privacy censor brush</h3><div class="stack"><button id="cbtn">Censor brush: off</button><div class="two" id="cst"><button data-c="blur" class="on">Frosted blur</button><button data-c="pix">Pixels</button></div><button id="cclr">Clear censors</button></div></section>';
 h+='<section><h3>Visual effects (all optional)</h3>'+[['spot','Cinematic spotlight dimmer'],['rip','Click ripples'],['cur','Cursor glow while zooming'],['trail','Motion tilt and streak'],['neon','Neon border glow']].map(([k,l])=>'<label class="tg"><input type="checkbox" data-t="'+k+'"'+(S[k]?' checked':'')+'>'+l+'</label>').join('')+'</section>';
@@ -233,7 +236,11 @@ h+='<section><h3>Audio FX and smart features</h3>'+[['sfxZoom','Auto-zoom whoosh
 $('#side').innerHTML=h;
 const FM={};GR.forEach(g=>g[1].forEach(r=>FM[r[1]]=r[5]));
 document.querySelectorAll('[data-k]').forEach(i=>i.oninput=()=>{S[i.dataset.k]=+i.value;$('#o_'+i.dataset.k).textContent=FM[i.dataset.k](+i.value)});
-document.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{S.wall=+b.dataset.w;document.querySelectorAll('[data-w]').forEach(x=>x.classList.toggle('on',x===b))});
+function selWall(n){S.wall=n;document.querySelectorAll('[data-w]').forEach(x=>x.classList.toggle('on',+x.dataset.w===n))}
+document.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{selWall(+b.dataset.w);if(S.wall===8&&!bgImg)$('#bgf').click()});
+$('#c1').oninput=e=>{S.c1=e.target.value;if(S.wall<6)selWall(6)};$('#c2').oninput=e=>{S.c2=e.target.value;if(S.wall<7)selWall(7)};
+$('#bgb').onclick=()=>$('#bgf').click();
+$('#bgf').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{bgImg=im;selWall(8)};im.onerror=()=>toast('This image cannot be loaded');im.src=URL.createObjectURL(f)};
 document.querySelectorAll('[data-t]').forEach(i=>i.onchange=async()=>{const k=i.dataset.t;S[k]=i.checked?1:0;audio.init();if(k==='pass')audio.vg.gain.value=S.pass;
  if(k==='voice'){if(i.checked&&!voice.an)await voiceInit(i);else if(!i.checked&&voice.on){voice.on=0;dirEnd()}}
  if(k==='face'&&i.checked&&!fc.v)await faceInit(i);
