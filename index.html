@@ -47,9 +47,9 @@ canvas{display:block;border-radius:6px;box-shadow:0 0 0 1px rgba(0,243,255,.25),
 <script>
 const $=s=>document.querySelector(s),cv=$('#stage'),ctx=cv.getContext('2d'),vid=$('#vid');
 const SIZES={'16:9':[1280,720],'9:16':[720,1280],'1:1':[900,900]};let ratio='16:9';
-const S={fps:60,zmode:'cam',spot:1,keys:1,ksfx:1,voice:0,face:0,vthr:.08,cens:0,cstyle:'blur',zoom:2,lerp:.04,tilt:.5,pad:24,rad:20,shadow:.6,glow:.6,wall:0,sfxZoom:1,sfxClick:1,pass:1,mic:0,rip:1,cur:1,trail:1,neon:1,br:14e6,c1:'#101626',c2:'#3b1a6e'};let bgImg=null;const SAVE=['zoom','lerp','tilt','vthr','pad','rad','shadow','glow','wall','zmode','sfxZoom','sfxClick','pass','spot','keys','ksfx','rip','cur','trail','neon','c1','c2'];
-try{const o=JSON.parse(localStorage.getItem('cz_s')||'{}');SAVE.forEach(k=>{if(k in o&&typeof o[k]===typeof S[k])S[k]=o[k]});if(S.wall===8)S.wall=0}catch(e){}
-function save(){try{const o={};SAVE.forEach(k=>o[k]=S[k]);localStorage.setItem('cz_s',JSON.stringify(o))}catch(e){}}
+const S={fps:60,zmode:'cam',spot:0,keys:1,ksfx:1,voice:0,face:0,vthr:.08,cens:0,cstyle:'blur',zoom:2.2,lerp:.045,tilt:0,pad:44,rad:14,shadow:.55,glow:0,wall:9,sfxZoom:1,sfxClick:1,pass:1,mic:0,rip:1,cur:0,trail:0,neon:0,br:14e6,c1:'#101626',c2:'#3b1a6e'};let bgImg=null;const SAVE=['zoom','lerp','tilt','vthr','pad','rad','shadow','glow','wall','zmode','sfxZoom','sfxClick','pass','spot','keys','ksfx','rip','cur','trail','neon','c1','c2'];
+try{const o=JSON.parse(localStorage.getItem('cz_s2')||'{}');SAVE.forEach(k=>{if(k in o&&typeof o[k]===typeof S[k])S[k]=o[k]});if(S.wall===8)S.wall=0}catch(e){}
+function save(){try{const o={};SAVE.forEach(k=>o[k]=S[k]);localStorage.setItem('cz_s2',JSON.stringify(o))}catch(e){}}
 const cam={x:.5,y:.5,tx:.5,ty:.5,z:1,tz:1,vx:0,vy:0,sx:.5,sy:.5,sz:1,lx:.5,ly:.5,lo:0};let cd=null;const boxes=[],pc=document.createElement('canvas');
 let hist=[],am='cam',az=2,dm='cam',dzm=2,kf=[],cur=[],dir=false,dirStart=0,lastK=-1,zoomed=false,ptr={x:.5,y:.5},ripples=[],exporting=null,mode='demo',t=0,playing=true,last=performance.now(),prevT=0,fps=60,lastCrop=null;
 const DUR=24;
@@ -105,7 +105,7 @@ function loadVideo(url){mode='vid';kf=[];vid.src=url;vid.onloadedmetadata=()=>{i
 function toast(m){const e=$('#toast');e.textContent=m;e.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.display='none',3800)}
 /* ---------- Wallpapers ---------- */
 function blobs(W,H,bg,bl,tt){ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='lighter';bl.forEach(([c,a,b,r,s],i)=>{const x=W*(a+.25*Math.sin(tt*s+i*2)),y=H*(b+.25*Math.cos(tt*s*.8+i)),R=Math.max(W,H)*r,gr=ctx.createRadialGradient(x,y,0,x,y,R);gr.addColorStop(0,c);gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)});ctx.globalCompositeOperation='source-over'}
-const WALLS=['Cyberpunk grid','Midnight aurora','Sunset mesh','Obsidian glass','Violet nebula','Deep ocean','Solid color','Two-color gradient','My own image'];
+const WALLS=['Cyberpunk grid','Midnight aurora','Sunset mesh','Obsidian glass','Violet nebula','Deep ocean','Solid color','Two-color gradient','My own image','Soft pastel (Screen Studio)'];
 function wallpaper(i,W,H,tt){
  if(i===0){const gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#07080c');gr.addColorStop(1,'#25093f');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);ctx.lineWidth=1.5;ctx.strokeStyle='#00f3ff';const hy=H*.42,ph=(tt*.4)%1;
   for(let k=0;k<24;k++){const f=Math.pow((k+ph)/24,2);ctx.globalAlpha=.1+f*.5;ctx.beginPath();ctx.moveTo(0,hy+(H-hy)*f);ctx.lineTo(W,hy+(H-hy)*f);ctx.stroke()}
@@ -115,6 +115,7 @@ function wallpaper(i,W,H,tt){
  else if(i===3){const gr=ctx.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#0a0b10');gr.addColorStop(.5,'#1c1f2e');gr.addColorStop(1,'#08090d');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);ctx.fillStyle='rgba(255,255,255,.03)';for(let k=0;k<6;k++){ctx.save();ctx.translate(W*(.1+k*.18),0);ctx.rotate(.5+Math.sin(tt*.2+k)*.03);ctx.fillRect(0,-H,50+k*20,H*3);ctx.restore()}}
  else if(i===4)blobs(W,H,'#0b0320',[['rgba(157,0,255,.7)',.3,.3,.7,.35],['rgba(0,243,255,.45)',.8,.8,.6,.3],['rgba(255,0,170,.4)',.7,.2,.5,.45]],tt);
  else if(i===5)blobs(W,H,'#020814',[['rgba(0,90,255,.6)',.3,.7,.7,.3],['rgba(0,243,255,.4)',.8,.3,.5,.4]],tt);
+ else if(i===9){const gr=ctx.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#a9d4ff');gr.addColorStop(.45,'#c9a2f5');gr.addColorStop(1,'#f27fd0');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);const rg=ctx.createRadialGradient(W*.15,H*.1,0,W*.15,H*.1,W*.5);rg.addColorStop(0,'rgba(255,255,255,.35)');rg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=rg;ctx.fillRect(0,0,W,H)}
  else if(i===6){ctx.fillStyle=S.c1;ctx.fillRect(0,0,W,H)}
  else if(i===7){const gr=ctx.createLinearGradient(0,0,W,H);gr.addColorStop(0,S.c1);gr.addColorStop(1,S.c2);ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
  else{ctx.fillStyle=S.c1;ctx.fillRect(0,0,W,H);if(bgImg){const k=Math.max(W/bgImg.naturalWidth,H/bgImg.naturalHeight),w=bgImg.naturalWidth*k,h=bgImg.naturalHeight*k;ctx.drawImage(bgImg,(W-w)/2,(H-h)/2,w,h)}}}
@@ -130,7 +131,7 @@ function render(now){
  ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=S.shadow*90;ctx.shadowOffsetY=S.shadow*34-sy*200;ctx.shadowOffsetX=-sk*200;ctx.beginPath();ctx.roundRect(fx,fy,fw,fh,S.rad);ctx.fillStyle='#000';ctx.fill();ctx.shadowColor='transparent';
  ctx.save();ctx.clip();const el=srcEl();if(mode==='demo'||vid.readyState>=2)try{ctx.drawImage(el,cx,cy,cw,ch,fx,fy,fw,fh)}catch(e){}
  const nowMs=performance.now();ripples=ripples.filter(r=>nowMs-r.t<750);
- ripples.forEach(r=>{const a=(nowMs-r.t)/700,[px,py]=toC(r.nx,r.ny);for(let j=0;j<3;j++){const aj=a-j*.12;if(aj<=0)continue;ctx.beginPath();ctx.arc(px,py,10+aj*170*fw/1280*Math.max(1,cam.z*.6),0,7);ctx.strokeStyle=j%2?'#9d00ff':'#00f3ff';ctx.globalAlpha=1-aj;ctx.lineWidth=4-j;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=18;ctx.stroke()}ctx.globalAlpha=1;ctx.shadowBlur=0});
+ ripples.forEach(r=>{const a=(nowMs-r.t)/700,[px,py]=toC(r.nx,r.ny);for(let j=0;j<3;j++){const aj=a-j*.12;if(aj<=0)continue;ctx.beginPath();ctx.arc(px,py,10+aj*170*fw/1280*Math.max(1,cam.z*.6),0,7);ctx.strokeStyle=S.neon?(j%2?'#9d00ff':'#00f3ff'):'#ffffff';ctx.globalAlpha=(1-aj)*(S.neon?1:.55);ctx.lineWidth=S.neon?4-j:3-j*.8;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=S.neon?18:0;ctx.stroke()}ctx.globalAlpha=1;ctx.shadowBlur=0});
  if(dir&&S.cur){const[px,py]=toC(ptr.x,ptr.y),g=ctx.createRadialGradient(px,py,2,px,py,34);g.addColorStop(0,'rgba(0,243,255,.55)');g.addColorStop(1,'rgba(157,0,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,34,0,7);ctx.fill()}
  const bx=boxes.slice();if(cd)bx.push({x0:Math.min(cd[0],cd[2]),y0:Math.min(cd[1],cd[3]),x1:Math.max(cd[0],cd[2]),y1:Math.max(cd[1],cd[3]),s:S.cstyle,d:1});
  bx.forEach(b=>{const[a,c]=toC(b.x0,b.y0),[e2,f2]=toC(b.x1,b.y1),w=e2-a,hh=f2-c;if(w<2||hh<2)return;ctx.save();ctx.beginPath();ctx.rect(a,c,w,hh);ctx.clip();
@@ -157,9 +158,13 @@ cv.addEventListener('pointermove',e=>{setPtr(e);if(cd){const p=toSrc(e);cd[2]=p[
 addEventListener('pointerup',()=>{if(cd){const[a,b,c,d]=cd;if(Math.abs(c-a)>.005&&Math.abs(d-b)>.005)boxes.push({x0:Math.min(a,c),y0:Math.min(b,d),x1:Math.max(a,c),y1:Math.max(b,d),s:S.cstyle});cd=null;return}dirEnd()});addEventListener('blur',dirEnd);
 addEventListener('keydown',e=>{if((e.code==='KeyZ'||e.code==='Space')&&!e.ctrlKey&&!e.metaKey&&!e.repeat&&!(e.target.tagName==='INPUT'&&e.target.type!=='range')){e.preventDefault();dirStartFn()}});
 addEventListener('keyup',e=>{if(e.code==='KeyZ'||e.code==='Space')dirEnd()});
+let foc=null;
 function step(dt){
  const ct=getT();let z=1,x=.5,y=.5;
- if(dir){z=dzm;am=dm;az=dzm;x=ptr.x;y=ptr.y;if(playing&&ct-lastK>.05){cur.push({t:ct,x,y,z,m:dm});lastK=ct}}
+ if(!dir)foc=null;
+ if(dir){z=dzm;am=dm;az=dzm;x=ptr.x;y=ptr.y;
+  /* Screen-Studio style: camera holds still while the cursor moves inside a dead-zone, and only glides when the cursor nears the edge of the zoomed view */
+  if(!foc)foc={x:ptr.x,y:ptr.y};const hw=.5/z,dz=hw*.5;foc.x=Math.min(1-hw,Math.max(hw,Math.min(ptr.x+dz,Math.max(ptr.x-dz,foc.x))));foc.y=Math.min(1-hw,Math.max(hw,Math.min(ptr.y+dz,Math.max(ptr.y-dz,foc.y))));x=foc.x;y=foc.y;if(playing&&ct-lastK>.05){cur.push({t:ct,x,y,z,m:dm});lastK=ct}}
  else{let q=null;for(let i=kf.length-1;i>=0;i--)if(kf[i].t<=ct){q=kf[i];break}if(q){z=q.z;x=q.x;y=q.y;if(q.z>1.001){am=q.m||S.zmode;az=q.z}}}
  const dc2=mode==='demo'?demoCursor(ct):null;
  if(z<=1.001&&ratio==='9:16'){x=dc2?dc2.x/1280:ptr.x;y=.5}
@@ -232,7 +237,7 @@ function finish(){exporting=null;$('#ov').style.display='none';setTimeout(()=>{r
 const GR=[['Camera and spring physics',[['Zoom scale','zoom',1.5,3.5,.1,v=>v.toFixed(1)+'x'],['Spring lerp factor','lerp',.01,.2,.01,v=>v.toFixed(2)],['3D tilt intensity','tilt',0,1,.05,v=>(v*100|0)+'%'],['Voice threshold (lower = more sensitive)','vthr',.02,.3,.01,v=>v.toFixed(2)]]],['Frame and styling',[['Screen padding','pad',0,120,1,v=>v+'px'],['Corner radius','rad',0,40,1,v=>v+'px'],['Drop shadow','shadow',0,1,.05,v=>(v*100|0)+'%'],['Neon border glow','glow',0,1,.05,v=>(v*100|0)+'%']]]];
 let h='<section><h3>Source</h3><div class="stack"><button id="rs">Record screen now</button><button id="up">Upload video file</button><button id="ld" class="btn-x">Load interactive demo animation</button><button id="rst">Reset all settings</button></div></section>';
 GR.forEach(([n,l],gi)=>{h+='<section><h3>'+n+'</h3>'+l.map(([a,k,mi,ma,st,f])=>'<div class="row"><span>'+a+'</span><output id="o_'+k+'">'+f(S[k])+'</output></div><input type="range" data-k="'+k+'" min="'+mi+'" max="'+ma+'" step="'+st+'" value="'+S[k]+'" aria-label="'+a+'">').join('');
- if(gi)h+='<div class="row"><span>Wallpaper</span></div><div class="two" id="wp" style="margin-top:6px">'+WALLS.map((w,i)=>'<button data-w="'+i+'"'+(i?'':' class="on"')+'>'+w+'</button>').join('')+'</div><div class="two" style="margin-top:8px"><label style="font-size:12px;color:var(--mu)">Color 1<input type="color" id="c1" value="'+S.c1+'"></label><label style="font-size:12px;color:var(--mu)">Color 2<input type="color" id="c2" value="'+S.c2+'"></label></div><button id="bgb" style="margin-top:8px;width:100%">Upload background image</button><input type="file" id="bgf" accept="image/*" hidden>';h+='</section>'});
+ if(gi)h+='<div class="row"><span>Wallpaper</span></div><div class="two" id="wp" style="margin-top:6px">'+WALLS.map((w,i)=>'<button data-w="'+i+'"'+(i===S.wall?' class="on"':'')+'>'+w+'</button>').join('')+'</div><div class="two" style="margin-top:8px"><label style="font-size:12px;color:var(--mu)">Color 1<input type="color" id="c1" value="'+S.c1+'"></label><label style="font-size:12px;color:var(--mu)">Color 2<input type="color" id="c2" value="'+S.c2+'"></label></div><button id="bgb" style="margin-top:8px;width:100%">Upload background image</button><input type="file" id="bgf" accept="image/*" hidden>';h+='</section>'});
 h+='<section><h3>Zoom style</h3><div class="two" id="zm" style="grid-template-columns:1fr"><button data-m="cam" class="on">Camera zoom</button><button data-m="lens">Magnifier lens</button><button data-m="both">Camera + lens</button></div><p style="font-size:12px;color:var(--mu);margin-top:8px">Each zoom keeps the style you had selected when you recorded it. Changing the style only affects your next zooms.</p></section>';
 h+='<section><h3>Privacy censor brush</h3><div class="stack"><button id="cbtn">Censor brush: off</button><div class="two" id="cst"><button data-c="blur" class="on">Frosted blur</button><button data-c="pix">Pixels</button></div><button id="cclr">Clear censors</button></div></section>';
 h+='<section><h3>Visual effects (all optional)</h3>'+[['spot','Cinematic spotlight dimmer'],['rip','Click ripples'],['cur','Cursor glow while zooming'],['trail','Motion tilt and streak'],['neon','Neon border glow']].map(([k,l])=>'<label class="tg"><input type="checkbox" data-t="'+k+'"'+(S[k]?' checked':'')+'>'+l+'</label>').join('')+'</section>';
@@ -268,7 +273,7 @@ document.querySelectorAll('#zm button').forEach(b=>b.onclick=()=>{S.zmode=b.data
 document.querySelectorAll('#fpsel button').forEach(b=>b.onclick=()=>{if(exporting)return toast('Change the frame rate before exporting');S.fps=+b.dataset.f;document.querySelectorAll('#fpsel button').forEach(x=>x.classList.toggle('on',x===b))});
 document.querySelectorAll('#qsel button').forEach(b=>b.onclick=()=>{if(exporting)return toast('Change the quality before exporting');S.br=+b.dataset.q;document.querySelectorAll('#qsel button').forEach(x=>x.classList.toggle('on',x===b));toast('Estimated size: ~'+(dur()*S.br/8/1048576).toFixed(1)+' MB')});
 document.querySelectorAll('#spd button').forEach(b=>b.onclick=()=>{const v=+b.dataset.s;S.lerp=v;document.querySelector('[data-k=lerp]').value=v;$('#o_lerp').textContent=v.toFixed(2);document.querySelectorAll('#spd button').forEach(x=>x.classList.toggle('on',x===b))});
-$('#rst').onclick=()=>{try{localStorage.removeItem('cz_s')}catch(e){}location.reload()};
+$('#rst').onclick=()=>{try{localStorage.removeItem('cz_s2')}catch(e){}location.reload()};
 document.querySelectorAll('#zm button').forEach(x=>x.classList.toggle('on',x.dataset.m===S.zmode));selWall(S.wall);
 document.querySelectorAll('#spd button').forEach(x=>x.classList.toggle('on',+x.dataset.s===S.lerp));
 ['input','change','click'].forEach(ev=>addEventListener(ev,()=>setTimeout(save)));
