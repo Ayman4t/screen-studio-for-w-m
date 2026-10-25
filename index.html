@@ -239,7 +239,7 @@ function startRec(){audio.init();const vs=cv.captureStream(S.fps),ms=new MediaSt
  rec=new MediaRecorder(ms,{mimeType:mt,videoBitsPerSecond:S.br,audioBitsPerSecond:S.br<3e6?96e3:128e3});chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
  rec.onstop=()=>{const ext=(rec.mimeType||'').includes('mp4')?'mp4':'webm',blob=new Blob(chunks,{type:rec.mimeType||'video/webm'});if(!blob.size)return toast('Nothing was recorded. Try again.');const a=$('#dl');a.href=URL.createObjectURL(blob);a.download='cyberzoom-demo.'+ext;a.textContent='Download video ('+(blob.size/1048576).toFixed(1)+' MB)';a.style.display='inline-block';$('#oh').textContent='Your video is ready';$('#pb').parentNode.style.display='none';$('#pt').style.display='none';$('#cx').textContent='Close';$('#ov').style.display='grid'};rec.start(250)}
 $('#live').onclick=()=>{if(exporting==='live'){rec.stop();exporting=null;$('#live').textContent='Live record';$('#live').classList.remove('rec')}else if(!exporting){startRec();exporting='live';$('#live').textContent='Stop and save';$('#live').classList.add('rec');if(!playing)setPlay(true)}};
-$('#auto').onclick=()=>{if(exporting)return;if(mode==='vid'&&(!dur()||vid.readyState<2))return toast('Wait until your video finishes loading, or click Load interactive demo animation');resetOv();startRec();exporting='auto';$('#ov').style.display='grid';dirEnd();zoomed=false;seek(0);prevT=0;setPlay(true)};
+$('#auto').onclick=()=>{if(exporting)return;if(S.oRec)ANNO.setRec(false);if(mode==='vid'&&(!dur()||vid.readyState<2))return toast('Wait until your video finishes loading, or click Load interactive demo animation');resetOv();startRec();exporting='auto';$('#ov').style.display='grid';dirEnd();zoomed=false;seek(0);prevT=0;setPlay(true)};
 function resetOv(){$('#dl').style.display='none';$('#oh').textContent='Rendering your cinematic demo…';$('#pb').parentNode.style.display='';$('#pt').style.display='';$('#cx').textContent='Cancel'}
 $('#cx').onclick=()=>{$('#ov').style.display='none';if(exporting){exporting=null;try{rec.onstop=null;rec.stop()}catch(e){}}resetOv()};
 function finish(){exporting=null;$('#ov').style.display='none';setTimeout(()=>{rec.stop()},400);setPlay(false);requestAnimationFrame(frame)}
@@ -292,7 +292,7 @@ const ANNO=(()=>{
 const A={strokes:[],cur:null,tx:.5,ty:.5,x:.5,y:.5,px:0,py:0,inside:false,press:0,pr:1,t0:0,hot:new Set(['KeyL','KeyP','Escape'])};
 const sm=x=>x*x*(3-2*x),HOLD=.35,U=()=>Math.min(cv.width,cv.height)/720,COLS=['#00f3ff','#b026ff','#ff2ec4','#b6ff00'];
 const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*cv.width,(e.clientY-r.top)/r.height*cv.height]};
-function build(s){const p=new Path2D,q=s.pts;
+function build(s){const p=new Path2D,q=s.pts;if((s.type==='free'||s.type==='hl')&&(!q||!q.length))return p;
  if(s.type==='arrow'){const dx=s.x1-s.x0,dy=s.y1-s.y0;if(Math.hypot(dx,dy)<4)return p;const a=Math.atan2(dy,dx),h=Math.max(18,s.w*4.5)*U();p.moveTo(s.x0,s.y0);p.lineTo(s.x1,s.y1);for(const o of[-.5,.5]){p.moveTo(s.x1,s.y1);p.lineTo(s.x1-Math.cos(a+o)*h,s.y1-Math.sin(a+o)*h)}}
  else if(s.type==='ellipse'){const rx=Math.abs(s.x1-s.x0)/2,ry=Math.abs(s.y1-s.y0)/2;if(rx<2||ry<2)return p;p.ellipse((s.x0+s.x1)/2,(s.y0+s.y1)/2,rx,ry,0,0,Math.PI*2)}
  else{p.moveTo(q[0][0],q[0][1]);if(q.length===1)p.lineTo(q[0][0]+.01,q[0][1]);else{for(let i=1;i<q.length-1;i++)p.quadraticCurveTo(q[i][0],q[i][1],(q[i][0]+q[i+1][0])/2,(q[i][1]+q[i+1][1])/2);p.lineTo(q[q.length-1][0],q[q.length-1][1])}}
@@ -319,7 +319,7 @@ A.spot=(g,W,H,now)=>{const dt=Math.min(.1,Math.max(.001,(now-A.t0)/1000));A.t0=n
  const T=getT(),ex=exporting==='auto';
  if(S.oRec&&playing&&!ex){A.tk(T);if(T<A.take.b-.3){commit();A.tk(T)}const tk=A.take;tk.b=T;if(T-tk.ls>=1/30||tk.lo!==S.oSpot){tk.sp.push({t:T,on:S.oSpot?1:0,x:A.x,y:A.y,p:A.pr});tk.ls=T;tk.lo=S.oSpot}}
  else if(A.take)commit();
- if(S.oRep&&!S.oRec&&A.tl.sp.length&&(ex||!S.oSpot)){const sp=A.tl.sp,i=bs(sp,T);if(i>=0&&sp[i].on){const a=sp[i],b=sp[i+1];let x=a.x,y=a.y,p=a.p;if(b&&b.on&&b.t>a.t&&b.t-a.t<.5){const f=(T-a.t)/(b.t-a.t);x+=(b.x-x)*f;y+=(b.y-y)*f;p+=(b.p-p)*f}paintSpot(g,W,H,x*W,y*H,p)}}
+ if(S.oRep&&(ex||!S.oRec)&&A.tl.sp.length&&(ex||!S.oSpot)){const sp=A.tl.sp,i=bs(sp,T);if(i>=0&&sp[i].on){const a=sp[i],b=sp[i+1];let x=a.x,y=a.y,p=a.p;if(b&&b.on&&b.t>a.t&&b.t-a.t<.5){const f=(T-a.t)/(b.t-a.t);x+=(b.x-x)*f;y+=(b.y-y)*f;p+=(b.p-p)*f}paintSpot(g,W,H,x*W,y*H,p)}}
  else if(S.oSpot&&!ex)paintSpot(g,W,H,A.x*W,A.y*H,A.pr)};
 function paintStroke(g,s,p,a,u){const w=s.w*u*(.6+.4*a);g.strokeStyle=s.color;
  if(s.type==='hl'){g.globalAlpha=.34*a;g.lineWidth=w*5;g.shadowColor=s.color;g.shadowBlur=16*u*a;g.stroke(p);return}
@@ -327,9 +327,9 @@ function paintStroke(g,s,p,a,u){const w=s.w*u*(.6+.4*a);g.strokeStyle=s.color;
  g.globalAlpha=a;g.lineWidth=w*1.5;g.shadowColor=s.color;g.shadowBlur=24*u*a;g.stroke(p);
  g.shadowBlur=0;g.globalAlpha=.95*a;g.lineWidth=w*.5;g.strokeStyle='#fff';g.stroke(p)}
 function rs(s,T,W,H){const sx=W/s.cw,sy=H/s.ch,e=s.t1==null?T:Math.min(T,s.t1);
- if(s.type==='free'||s.type==='hl'){const q=[];for(const p of s.pts){if(p[2]>e)break;q.push([p[0]*sx,p[1]*sy])}return{type:s.type,pts:q,color:s.color,w:s.w}}
- let l=s.tr[0];for(const p of s.tr){if(p[2]>e)break;l=p}return{type:s.type,x0:s.x0*sx,y0:s.y0*sy,x1:l[0]*sx,y1:l[1]*sy,color:s.color,w:s.w}}
-A.pen=(g,W,H,now)=>{const life=S.oLife*1000,u=U(),T=getT(),ex=exporting==='auto',rp=S.oRep&&!S.oRec;A.strokes=A.strokes.filter(s=>s.rel==null||now-s.rel<life);
+ if(s.type==='free'||s.type==='hl'){const q=[];for(const p of s.pts){if(p[2]>e)break;q.push([p[0]*sx,p[1]*sy])}if(!q.length&&s.pts.length)q.push([s.pts[0][0]*sx,s.pts[0][1]*sy]);return{type:s.type,pts:q,color:s.color,w:s.w}}
+ let l=s.tr[0]||[s.x1,s.y1];for(const p of s.tr){if(p[2]>e)break;l=p}return{type:s.type,x0:s.x0*sx,y0:s.y0*sy,x1:l[0]*sx,y1:l[1]*sy,color:s.color,w:s.w}}
+A.pen=(g,W,H,now)=>{const life=S.oLife*1000,u=U(),T=getT(),ex=exporting==='auto',rp=S.oRep&&(ex||!S.oRec);A.strokes=A.strokes.filter(s=>s.rel==null||now-s.rel<life);
  g.save();g.lineCap='round';g.lineJoin='round';
  if(rp)for(const s of A.tl.st){if(T<s.t0)continue;let a=1,o;
   if(s.t1!=null&&T>s.t1){const k=(T-s.t1)/s.life;if(k>=1)continue;a=k<HOLD?1:1-sm((k-HOLD)/(1-HOLD));const ck=W+'x'+H;if(s._k!==ck){s._k=ck;s._o=rs(s,T,W,H);s._o.path=build(s._o)}o=s._o}else o=rs(s,T,W,H);
